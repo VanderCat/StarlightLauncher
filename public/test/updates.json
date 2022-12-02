@@ -1,0 +1,20 @@
+{
+    "$comment": "this file represents a serverside response with updates (or file idk)",
+    "updates": [
+        {
+            "title": "Aпдейт 1.42",
+            "subtitle": "lorem ipsum dolor sit amet",
+            "id": 3
+        },
+        {
+            "title": "no way minecraft 2",
+            "subtitle": "no freaking way",
+            "id": 2
+        },
+        {
+            "title": "Влад Кот Умер",
+            "subtitle": "да, ето правда",
+            "id": 1
+        }
+    ]
+}
