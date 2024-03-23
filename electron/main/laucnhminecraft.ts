@@ -5,6 +5,7 @@ import fs from 'fs-extra'
 import childProcess from 'child_process'
 import {v4 as uuid } from 'uuid'
 import { ipcMain, app } from 'electron'
+import {asyncForEach} from "../utils"
 
 async function loadProfile(e:Event, name:string) {
     const profile = await cfg.loadConfig(e, "profiles/"+name)
@@ -54,11 +55,6 @@ function parseArgs(list:any[], args?:string[]) {
     })
     return args
 }
-async function asyncForEach(array: Array<any>, callback:(v:any, i:number, arr:any[]) => Promise<any>) {
-    for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array);
-    }
-}
 
 async function getAllFiles(dirPath: string, arrayOfFiles?: string[]) {
     arrayOfFiles = arrayOfFiles || []
@@ -92,6 +88,7 @@ async function prepareJvmArgs(profile:any, jvm:any, location:string) {
     let jvmArgs = jvm.javaArgs.split(" ")
     args.concat(jvmArgs)
     console.log(location,profile.minecraft.name,"natives",os.platform(),os.arch())
+    //args.push("-Duser.dir="+path.resolve(location,profile.minecraft.name))
     args.push("-Djava.library.path="+path.resolve(location,profile.minecraft.name,"natives",os.platform(),os.arch()))
     args.push("-Dminecraft.launcher.brand=Starlight")
     args.push("-Dminecraft.launcher.version=0.1")

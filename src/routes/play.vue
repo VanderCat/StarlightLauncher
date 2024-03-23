@@ -1,23 +1,15 @@
 <script async setup lang="ts">
 import { ProgressHolder } from "types/progress"
 
-import Axios from "axios"
 import path from "node:path"
-import { ref, computed, onMounted, Ref } from "vue"
+import { ref, onMounted, Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { ipcRenderer } from "electron"
-import { app, net } from "@electron/remote"
+import { app } from "@electron/remote"
 import { useJvmSettingsStore } from '../stores/jvmSettings'
-import yaml from "yaml"
 
-const os = require("node:os")
-
-async function asyncForEach(array: Array<any>, callback:(v:any, i:number, arr:any[]) => Promise<any>) {
-    for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array);
-    }
-}
-
+import { getJavaInfo, getPackageInfo, getProfile, url } from "../serverapi"
+import { asyncForEach } from "../utils"
 
 const jvm = useJvmSettingsStore()
 const route = useRoute()
@@ -75,17 +67,6 @@ const dialog = ref({
     }
 })
 
-const url = 'http://vandercat.disi.moe/startlight' // CHANGEME
-async function apiRequest(endpoint:string, data:any) {
-    const response = await Axios.post(url+"api/"+endpoint, data)
-    if (!response.data.error) return response.data; else throw response.data.error
-}
-async function getPackageInfo(packageName: string) {
-    return (await apiRequest("package.get", {name:packageName})).package.files as any[];
-}
-async function getJavaInfo(cfg:any) {
-    return (await apiRequest("package.getJava", {java:cfg.minecraft.java, arch:os.arch(), platform:os.platform()})).package.files as any[];
-}
 async function fetchInfo(info: any[], progress:Ref) {
     console.log('[DOWNLOAD] fetching info...')
     
@@ -94,18 +75,8 @@ async function fetchInfo(info: any[], progress:Ref) {
     });
     console.log(progress.value)
 }
-async function getProfile() {
-    try {
-        const profile = await apiRequest("profiles.get", {name: route.params.profile+".yml"})
-        ipcRenderer.invoke("writefile", path.resolve(app.getPath("userData"), "profiles", route.params.profile+".yml"), profile)
-        return yaml.parse(profile) 
-    }
-    catch {
-        return false
-    }
-}
-
-async function download(progress:Ref) {
+const pathToMc = path.resolve(app.getPath("appData"), ".starlightmc")
+async function download(progress:Ref, skipList?:string[]) {
     try {
         const info = await getPackageInfo(progress.value.name)
         await fetchInfo(info, progress)
@@ -113,12 +84,18 @@ async function download(progress:Ref) {
         progress.value.started = true
         await asyncForEach(info, async element => {
             const pathSep = element.path.split("/")
-            const pathToMc = path.resolve(app.getPath("appData"), ".starlightmc", pathSep.slice(1).join(path.sep)) //TODO: Change
-            const fileSame = await ipcRenderer.invoke("checkfile", pathToMc, element.sha256)
-            if (!fileSame) {
-                console.log('[DOWNLOAD] downloading', element.path, "to", pathToMc)
+            const betterPath = pathSep.slice(1).join(path.sep)
+            const pathToFile = path.resolve(pathToMc, betterPath) //TODO: Change
+            const fileSame = await ipcRenderer.invoke("checkfile", pathToFile, element.sha256)
+            let skip = false
+            if (skipList)
+                skipList.forEach((entry: string) => {
+                    skip = skip || betterPath.startsWith(entry)
+                })
+            if (!(fileSame && skip)) {
+                console.log('[DOWNLOAD] downloading', element.path, "to", pathToFile)
                 const starTime = Date.now()
-                await ipcRenderer.invoke("download", url+"/"+element.path, pathToMc)
+                await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
                 progress.value.downloadSpeed = element.size/(Date.now()-starTime)
             } else {
                 progress.value.downloadSpeed = 0
@@ -144,13 +121,13 @@ async function downloadJava(progress:Ref, profile:any) { //TODO: refactor
         console.log('[JAVA] starting '+progress.value.name+'...')
         progress.value.started = true
         await asyncForEach(info, async element => {
-            const pathToMc = path.resolve(app.getPath("appData"), ".starlightmc", element.path) //TODO: Change
-            const fileSame = await ipcRenderer.invoke("checkfile", pathToMc, element.sha256)
+            const pathToFile = path.resolve(pathToMc, element.path) //TODO: Change
+            const fileSame = await ipcRenderer.invoke("checkfile", pathToFile, element.sha256)
             if (!fileSame) {
-                console.log('[JAVA] downloading', element.path, "to", pathToMc)
+                console.log('[JAVA] downloading', element.path, "to", pathToFile)
                 const starTime = Date.now()
                 try {
-                    await ipcRenderer.invoke("download", url+"/"+element.path, pathToMc)
+                    await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
                 } catch {
                     console.log("[JAVA] Failed download", element.path)
                 }
@@ -159,8 +136,8 @@ async function downloadJava(progress:Ref, profile:any) { //TODO: refactor
                 progress.value.downloadSpeed = 0
             }
             progress.value.currentSize+=element.size
-            if (path.basename(element.path, ".exe") == "javaw") {
-                ipcRenderer.invoke("writefile", path.resolve(app.getPath("userData"), ".javapath"), pathToMc)
+            if (path.basename(element.path, "w.exe") == "java") {
+                ipcRenderer.invoke("writefile", path.resolve(app.getPath("userData"), ".javapath"), pathToFile)
             }
         });
     } 
@@ -174,8 +151,8 @@ async function downloadJava(progress:Ref, profile:any) { //TODO: refactor
     progress.value.downloaded = true
     }
 }
-function downloadAll(profile:any) {
-    const funcs = [download(progress.assets),download(progress.minecraft)]
+function downloadAll(profile:any, skipFileList: string[]) {
+    const funcs = [download(progress.assets),download(progress.minecraft, skipFileList)]
     if (jvm.bundledJava) {
         funcs.push(downloadJava(progress.java, profile))
     }
@@ -186,13 +163,37 @@ async function startMinecraft() {
     await ipcRenderer.invoke("launchMinecraft", route.params.profile)
 }
 
+async function generateSkipFileList(profile:any) {
+    const list:string[] = []
+    await asyncForEach(profile.minecraft.skipCheck, async (entry:string) => {
+        entry = entry.replaceAll("/", path.sep)
+        if ((await ipcRenderer.invoke("checkpath", entry)))
+            list.push(entry)
+    })
+    return list
+}
+
+async function generateForceCheckFileList(profile:any, pack:any) {
+    await asyncForEach(profile.minecraft.forceCheck, async (entry:string) => {
+        const currentFileList: string[] = await ipcRenderer.invoke("getAllFiles", entry)
+        asyncForEach(currentFileList, async (file:string) => {
+            asyncForEach(pack.package.files, async (serverFile:any) => {
+                if (!(serverFile.path==file)){}
+        })
+        })
+    })
+    //return list
+}
+
 onMounted(async ()=>{
-    const status = await getProfile()
-    console.log(status)
+    const profile = await getProfile(route.params.profile as string)
+    console.log(profile)
     await jvm.loadSettings()
     progress.java.value.downloaded = !jvm.bundledJava
-    if (status) {
-        await downloadAll(status)
+    if (profile) {
+        progress.minecraft.value.name = profile.minecraft.name
+        progress.assets.value.name = profile.minecraft.assets
+        await downloadAll(profile, await generateSkipFileList(profile))
         let hasErrors = false
         for (const key in progress) {
             if (Object.prototype.hasOwnProperty.call(progress, key)) {

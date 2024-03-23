@@ -66,17 +66,17 @@ async function createWindow() {
   } else {
     win.loadFile(indexHtml)
   }
+  require("@electron/remote/main").enable(win.webContents)
 
   // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString())
-    require("@electron/remote/main").enable(win.webContents)
   })
   sendMessage = (text:string) => win?.webContents.send('minecraft-log', text)
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url)
+    if (url.startsWith('https:') || url.startsWith('http:')) shell.openExternal(url)
     return { action: 'deny' }
   })
 }
@@ -161,4 +161,33 @@ ipcMain.handle('checkfile', async (event,location:string, hash:string) => {
 ipcMain.handle('writefile', async (event,location:string, data:Buffer|string) => {
   await fs.ensureFile(location)
   await fs.writeFile(location, data)
+})
+ipcMain.handle('checkpath', async (event,location:string) => {
+  const exist = await fs.pathExists(location)
+  return exist
+})
+import {asyncForEach} from "../utils"
+import Path from "path"
+async function getAllFiles (event, dirPath:string, arrayOfFiles?: string[]) {
+  let files = await fs.readdir(dirPath, {withFileTypes:true})
+
+    arrayOfFiles = arrayOfFiles || []
+
+    await asyncForEach(files, async (file) => {
+        if (file.isDirectory()) {
+            arrayOfFiles = await getAllFiles(event, dirPath + Path.sep + file.name, arrayOfFiles)
+        } else {
+            arrayOfFiles?.push(Path.join(dirPath, file.name))
+        }
+    })
+
+    return arrayOfFiles
+}
+ipcMain.handle('getAllFiles', getAllFiles)
+ipcMain.handle('deleteFile', async (event,location:string) => {
+  if (await fs.pathExists(location)) {
+    await fs.remove(location)
+    return true
+  }
+  return false
 })
