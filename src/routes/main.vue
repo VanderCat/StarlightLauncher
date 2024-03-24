@@ -4,6 +4,14 @@ import controls from '../components/controls.vue'
 
 import playbutton from '../components/playbutton.vue'
 import iconbutton from '../components/iconbutton.vue'
+
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+const auth = useAuthStore();
+const router = useRouter();
+if (auth.accessToken == null) {
+    router.push("/login")
+}
 </script>
 
 <template>

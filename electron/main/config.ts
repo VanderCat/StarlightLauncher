@@ -4,16 +4,7 @@ import fs from 'fs-extra'
 import yaml from 'yaml'
 import { stringifyExpression } from '@vue/compiler-core'
 
-function check(path:string, type:number) {
-    let passed = false
-    try {
-        fs.accessSync(path, type);
-        passed = true
-    } 
-    finally {
-        return passed
-    }
-}
+import { check } from '../utils'
 
 const cfgfolder = app.getPath("userData")
 

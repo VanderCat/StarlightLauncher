@@ -191,3 +191,5 @@ ipcMain.handle('deleteFile', async (event,location:string) => {
   }
   return false
 })
+
+import "./auth";

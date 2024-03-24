@@ -6,3 +6,10 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
+
+interface AuthInfo {
+  accessToken: string | null,
+  clientToken: string | null,
+  uuid: string | null,
+  user: object | null
+}

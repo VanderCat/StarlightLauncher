@@ -7,6 +7,7 @@ import renderer from 'vite-plugin-electron-renderer'
 import vuetify from 'vite-plugin-vuetify'
 import pkg from './package.json'
 import topLevelAwait from "vite-plugin-top-level-await";
+import VueDevTools from 'vite-plugin-vue-devtools'
 
 rmSync('dist-electron', { recursive: true, force: true })
 
@@ -33,7 +34,7 @@ export default defineConfig({
           ]
           : []),
           // Allow use `import.meta.env.VITE_SOME_KEY` in Electron-Main
-        loadViteEnv(),
+        loadViteEnv()
       ],
     }),
     // Use Node.js API in the Renderer-process
@@ -48,7 +49,8 @@ export default defineConfig({
     }),
     vuetify({
       autoImport: true
-    })
+    }),
+    VueDevTools()
   ],
   server: process.env.VSCODE_DEBUG ? (() => {
     const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)

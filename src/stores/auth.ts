@@ -1,0 +1,48 @@
+import { defineStore } from 'pinia'
+import { ipcRenderer } from 'electron'
+import { uniqueId } from 'lodash';
+import axios from 'axios';
+
+const baseurl = "https://goldenoak.vanderc.at"
+
+export const useAuthStore = defineStore('authStore', {
+    state: () : AuthInfo => ({
+        accessToken: null,
+        uuid: null,
+        user: null,
+        clientToken: null
+      }),
+    actions: {
+        async loadLastLogin() {
+            const account: AuthInfo = await ipcRenderer.invoke("loadLastLogin");
+            this.accessToken = account.accessToken
+            this.uuid = account.uuid
+            this.clientToken = account.clientToken??uniqueId();
+        },
+        async login(username: string, password: string) {
+            const account = await axios.post(baseurl+"/authenticate", {
+                username: username,
+                password: password
+            })
+
+            this.accessToken = account.data.accessToken
+            this.uuid = account.data.selectedProfile.uuid
+            this.clientToken = account.data.clientToken
+            this.user = account.data.selectedProfile
+        },
+        async refreshLogin() {
+            const account = await axios.post(baseurl+"/refresh", {
+                accessToken: this.accessToken,
+                clientToken: this.clientToken
+            })
+
+            this.accessToken = account.data.accessToken
+            this.uuid = account.data.selectedProfile.uuid
+            this.clientToken = account.data.clientToken
+            this.user = account.data.selectedProfile
+        },
+        async saveLogin() {
+            await ipcRenderer.invoke("saveLastLogin", {accessToken:this.accessToken, uuid:this.uuid, clientToken: this.clientToken});
+        }
+    },
+})

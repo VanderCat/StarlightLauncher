@@ -29,4 +29,34 @@ jvm.loadSettings()
   align-items: stretch;
   height: 100vh;
 }
+.padding {
+    padding: 16px;
+}
+.fullHeight {
+    height: 100%;
+}
+.mainWrapper{
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
+}
+.main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+}
+
+.header {
+    margin-left: 16px;
+    margin-top: 16px;
+    width: calc(100% - 32px);
+    font-weight: 900;
+    font-size: 20px;
+    font-family: "InterVariable";
+    color: white;
+}
 </style>
