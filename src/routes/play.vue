@@ -266,7 +266,65 @@ onMounted(async ()=>{
 </template>
 
 <style scoped>
+.padding {
+    padding: 16px;
+}
+.fullHeight {
+    height: 100%;
+}
+.mainWrapper{
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
+}
+.main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+}
 
+.iconHolder {
+    background-color: #0004;
+    padding: 24px;
+    display: flex;
+    gap: 64px;
+    width: fit-content;
+    border-radius: 4px;
+}
+.infoHolder {
+    display: flex;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 76px;
+    padding-right: 76px;
+    width: 560px;
+    justify-content: space-between;
+}
+.header {
+    margin-left: 16px;
+    margin-top: 16px;
+    width: calc(100% - 32px);
+    font-weight: 900;
+    font-size: 20px;
+    font-family: "InterVariable";
+    color: white;
+}
+
+.downloadInfo {
+    position: relative;
+    width: 100%;
+    right: 16px;
+    bottom: 8px;
+    text-align: end;
+    font-weight: 900;
+    font-size: 24px;
+    font-family: "InterVariable";
+    color: white;
+}
 
 </style>
 
