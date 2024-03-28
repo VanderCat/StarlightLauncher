@@ -19,7 +19,7 @@
     </div>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
     .flex {
         display: flex;
         #news {
@@ -45,6 +45,7 @@
         }
     }
 </style>
+
 
 <script lang="ts">
 const mila = require("markdown-it-link-attributes")

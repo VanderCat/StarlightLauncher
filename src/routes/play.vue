@@ -10,6 +10,7 @@ import { useJvmSettingsStore } from '../stores/jvmSettings'
 
 import { getJavaInfo, getPackageInfo, getProfile, url } from "../serverapi"
 import { asyncForEach } from "../utils"
+import Console from "./console.vue"
 
 const jvm = useJvmSettingsStore()
 const route = useRoute()
@@ -173,13 +174,28 @@ async function generateSkipFileList(profile:any) {
     return list
 }
 
-async function generateForceCheckFileList(profile:any, pack:any) {
+async function PurgeFiles(profile:any, pack:any) {
+    console.log("purge started")
     await asyncForEach(profile.minecraft.forceCheck, async (entry:string) => {
-        const currentFileList: string[] = await ipcRenderer.invoke("getAllFiles", entry)
-        asyncForEach(currentFileList, async (file:string) => {
-            asyncForEach(pack.package.files, async (serverFile:any) => {
-                if (!(serverFile.path==file)){}
-        })
+        const currentFileList: string[] = await ipcRenderer.invoke("getAllFiles", path.resolve( pathToMc, profile.minecraft.name, entry))
+        await asyncForEach(currentFileList, async (file:string) => {
+            const serverFilename = "updates"+file.replace(pathToMc, "").replaceAll("\\","/");
+            console.log("checking ", serverFilename)
+            let legalFile = false;
+            await asyncForEach(pack, async (serverFile:any) => {
+                //console.log("debug ", serverFile)
+                if (serverFile.path==serverFilename) {
+                    const legality = await ipcRenderer.invoke("checkfile", file, serverFile.sha256);
+                    //console.log(serverFilename, "is not legal")
+                    legalFile = legalFile || legality
+                }
+            })
+            if (!legalFile) {
+                //console.log("deliting ", file)
+                if (await ipcRenderer.invoke("deleteFile", file)) {
+                    console.log("removed illegal file "+file)
+                }
+            }
         })
     })
     //return list
@@ -194,6 +210,7 @@ onMounted(async ()=>{
         progress.minecraft.value.name = profile.minecraft.name
         progress.assets.value.name = profile.minecraft.assets
         await downloadAll(profile, await generateSkipFileList(profile))
+        await PurgeFiles(profile, await getPackageInfo(progress.minecraft.value.name))
         let hasErrors = false
         for (const key in progress) {
             if (Object.prototype.hasOwnProperty.call(progress, key)) {
