@@ -92,23 +92,27 @@ async function prepareJvmArgs(profile:any, jvm:any, location:string) {
     args.push("-Djava.library.path="+path.resolve(location,profile.minecraft.name,"natives",os.platform(),os.arch()))
     args.push("-Dminecraft.launcher.brand=Starlight")
     args.push("-Dminecraft.launcher.version=0.1")
-    args.push("-Dlog4j.configurationFile="+path.resolve(path.dirname(app.getPath("exe")), "log4jcfg.xml"))
+    args.push("-Dlog4j2.configurationFile="+path.resolve(path.dirname(app.getPath("exe")), "log4jcfg.xml"))
     const cp = await prepareClasspath(profile, location)
     args.push("-cp", cp)
     return args
 }
+
+import auth from "./auth";
+
 function prepareClientArgs(profile:any, location:string) {
+    const authInfo = auth.loadLastLogin(null)
     let args:string[] = []
-    args.push("--username", "Guest") //FIXME
-    args.push("--accessToken", "StarlightGlimmerIsTheBestPony") 
+    args.push("--username", authInfo.user.name)
+    args.push("--accessToken", authInfo.accessToken) 
     args.push("--version", profile.minecraft.version)
     args.push("--gameDir", path.resolve(location, profile.minecraft.name))
     args.push("--assetsDir", path.resolve(location, "assets"))
     //args.push("--assetsDir", "C:/TL/assets")
-    args.push("--assetIndex", "1.19") //FIXME
-    args.push("--uuid", uuid()) //FIXME
-    args.push("--clientId", "")
-    args.push("--xuid", "")
+    args.push("--assetIndex", (profile.minecraft.version as string).split(".").slice(0, 2).join(".")) //FIXME
+    args.push("--uuid", authInfo.uuid)
+    //args.push("--clientId", "")
+    //args.push("--xuid", "")
     args.push("--userType", "legacy")
     args.push("--versionType", "release")
     return args
@@ -129,7 +133,9 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, Pro
         javaPath = await fs.readFile(path.resolve(app.getPath("userData"),".javapath"), "utf-8");
     else 
         javaPath = path.resolve(jvm.javaPath, "javaw.exe")
-    const proc = childProcess.spawn(javaPath, finalArgs)//FIXME: also use bundled java
+    const proc = childProcess.spawn(javaPath, finalArgs, {
+        cwd: path.resolve(location, profile.minecraft.name) //https://github.com/Majrusz/MajruszLibrary/issues/76 :/
+    })
     proc.stdout.on('data', (data) => {
         sendMessage(data)
     })

@@ -29,7 +29,7 @@ ipcRenderer.on('minecraft-log', (e:Event, text:Uint8Array)=>{
   const buffer = Buffer.from(text)
   const string = buffer.toString("utf-8")
   try {
-    string.split("\r\n").forEach(msg => {
+    string.split("\n").forEach(msg => {
       if (msg!=""){
       const parsedMsg = JSON.parse(msg)
       const event = new CustomEvent("MinecraftMessage", {detail:parsedMsg})

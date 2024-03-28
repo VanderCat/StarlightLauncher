@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('authStore', {
             })
 
             this.accessToken = account.data.accessToken
-            this.uuid = account.data.selectedProfile.uuid
+            this.uuid = account.data.selectedProfile.id
             this.clientToken = account.data.clientToken
             this.user = account.data.selectedProfile
         },
@@ -35,14 +35,21 @@ export const useAuthStore = defineStore('authStore', {
                 accessToken: this.accessToken,
                 clientToken: this.clientToken
             })
-
+            console.log(account)
             this.accessToken = account.data.accessToken
-            this.uuid = account.data.selectedProfile.uuid
+            this.uuid = account.data.selectedProfile.id
             this.clientToken = account.data.clientToken
             this.user = account.data.selectedProfile
         },
         async saveLogin() {
-            await ipcRenderer.invoke("saveLastLogin", {accessToken:this.accessToken, uuid:this.uuid, clientToken: this.clientToken});
+            await ipcRenderer.invoke("saveLastLogin", {
+                accessToken:this.accessToken, 
+                uuid:this.uuid, 
+                clientToken: this.clientToken, 
+                user: {
+                    name: this.user?.name
+                }
+            });
         }
     },
 })

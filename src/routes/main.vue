@@ -21,7 +21,7 @@ if (auth.accessToken == null) {
         </div>
         <controls>
             <template v-slot:left>
-                <router-link to="/play/HexMC"><playbutton>играть</playbutton></router-link>
+                <router-link to="/play/agusha"><playbutton>играть</playbutton></router-link>
             </template>
             <template v-slot:right>
                 <router-link to="/settings"><iconbutton/></router-link>

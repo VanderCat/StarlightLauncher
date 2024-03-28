@@ -6,12 +6,16 @@ const router = useRouter()
 const Logs = ref<any[]>([])
 const LogHolder = ref<HTMLElement>()
 const onMessage = (event:any)=>{
+    if ( typeof(event.detail) == 'string') {
+        Logs.value.push({message:event.detail})
+    }
     const message = event.detail
+    console.log(message)
     if (!message.minecraftClosed){
         Logs.value.push(message)
         nextTick(()=>{
             if (LogHolder.value)
-            if (Math.abs(LogHolder.value.scrollHeight - LogHolder.value.clientHeight - LogHolder.value.scrollTop) < 64)
+            if (Math.abs(LogHolder.value.scrollHeight - LogHolder.value.clientHeight - LogHolder.value.scrollTop) < 128)
             LogHolder.value?.lastElementChild?.scrollIntoView({block: 'end'});
         })
     }
@@ -31,9 +35,9 @@ onUnmounted(()=>{
             <div class="header">консоль</div>
             <div class="consoleLog" ref="LogHolder">
                 <div class="entry" v-for="entry in Logs">
-                    <span class="entryDate">{{DateTime.fromMillis(entry.timeMillis).toLocaleString(DateTime.TIME_24_WITH_SECONDS)}}</span>
+                    <span class="entryDate">{{DateTime.fromMillis(entry.timeMillis??0).toLocaleString(DateTime.TIME_24_WITH_SECONDS)}}</span>
                     <span :class="'level-'+entry.level">[{{entry.thread}}/{{entry.level}}]</span>
-                    <span class="entryText">{{entry.message}}</span>
+                    <span class="entryText">{{entry.message?.replace(/^\s+|\s+$/g, "")}}</span>
                 </div>
             </div>
         </v-card>
@@ -69,6 +73,7 @@ onUnmounted(()=>{
     padding-left: 16px;
     padding-right: 16px;
     font-size: 14px;
+    white-space: pre-wrap;
 }
 .entry:nth-child(even) {
     background-color: #0002;

@@ -15,7 +15,7 @@ let filteredMods:any
 
 onMounted(async ()=>{
     try {
-        cfg.value = await ipcRenderer.invoke("loadConfig", "profiles/HexMC")
+        cfg.value = await ipcRenderer.invoke("loadConfig", "profiles/agusha")
         if (cfg.value == null) throw "config is empty"
     } 
     catch(err) {

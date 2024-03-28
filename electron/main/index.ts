@@ -192,4 +192,11 @@ ipcMain.handle('deleteFile', async (event,location:string) => {
   return false
 })
 
-import "./auth";
+import auth from "./auth";
+
+ipcMain.handle("loadLastLogin", (e:Event) => {
+  return auth.loadLastLogin(e);
+})
+ipcMain.handle("saveLastLogin", (e:Event, data: any) => {
+  return auth.saveLastLogin(e, data);
+})

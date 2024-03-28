@@ -11,5 +11,10 @@ interface AuthInfo {
   accessToken: string | null,
   clientToken: string | null,
   uuid: string | null,
-  user: object | null
+  user: UserInfo | null
+}
+
+interface UserInfo {
+  name: string,
+  id: string
 }

@@ -2,7 +2,9 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="SysOut" target="SYSTEM_OUT">
-            <JSONLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true" includeTimeMillis="true" />
+            <!--<JsonTemplateLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true" includeTimeMillis="true" />-->
+            <PatternLayout 
+              pattern='{"timeMillis":%d{UNIX_MILLIS}, "level":"%level", "message":"%enc{%msg{ansi}\n%rEx}{json}", "thread":"%t"}\n' disableAnsi="false"/>
         </Console>
         <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg{nolookups}%n" />

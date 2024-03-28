@@ -33,9 +33,7 @@ export function saveLastLogin(e:Event, data:object) {
     return false
 }
 
-ipcMain.handle("loadLastLogin", (e:Event) => {
-    return loadLastLogin(e);
-})
-ipcMain.handle("saveLastLogin", (e:Event, data: any) => {
-    return saveLastLogin(e, data);
-})
+export default {
+    loadLastLogin,
+    saveLastLogin
+}
