@@ -10,7 +10,7 @@
         </v-card>
         <v-card id="currentnews" theme="dark" class="enable-select scroll">
                 <template v-slot:text v-if="loadedNews[selectedItem]">
-                    <div v-html="loadedNews[selectedItem].contents"/>
+                    <div class="news" v-html="loadedNews[selectedItem].contents"/>
                 </template>
                 <template v-slot:text v-else>
                     <v-progress-circular indeterminate color="primary"/>
@@ -19,7 +19,7 @@
     </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
     .flex {
         display: flex;
         #news {
@@ -32,6 +32,17 @@
     }
     .scroll {
         overflow-y: auto;
+    }
+    .news {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        ul {
+            margin-left: 2rem;
+        }
+        h1 {
+            margin-top: 0.75rem;
+        }
     }
 </style>
 
