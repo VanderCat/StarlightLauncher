@@ -131,8 +131,12 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, Pro
     let javaPath = ""
     if (jvm.bundledJava)
         javaPath = await fs.readFile(path.resolve(app.getPath("userData"),".javapath"), "utf-8");
-    else 
-        javaPath = path.resolve(jvm.javaPath, "javaw.exe")
+    else {
+        if (process.platform =="win32")
+            javaPath = path.resolve(jvm.javaPath, "javaw.exe")
+        else 
+        javaPath = path.resolve(jvm.javaPath, "java")
+    }
     const proc = childProcess.spawn(javaPath, finalArgs, {
         cwd: path.resolve(location, profile.minecraft.name) //https://github.com/Majrusz/MajruszLibrary/issues/76 :/
     })
