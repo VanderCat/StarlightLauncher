@@ -5,11 +5,12 @@ import playbutton from '../components/playbutton.vue'
 
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-const auth = useAuthStore();
-const router = useRouter();
 
 import {ref} from 'vue';
 import { AxiosError } from 'axios';
+
+const auth = useAuthStore();
+const router = useRouter();
 
 const boolLogingIn = ref(true);
 const loginSuccessfull = ref(false);

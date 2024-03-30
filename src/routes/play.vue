@@ -9,7 +9,7 @@ import { app } from "@electron/remote"
 import { useJvmSettingsStore } from '../stores/jvmSettings'
 
 import { getJavaInfo, getPackageInfo, getProfile, url } from "../serverapi"
-import { asyncForEach } from "../utils"
+import { asyncForEach, asyncForEachParallel } from "../utils"
 import Console from "./console.vue"
 
 const jvm = useJvmSettingsStore()
@@ -176,13 +176,13 @@ async function generateSkipFileList(profile:any) {
 
 async function PurgeFiles(profile:any, pack:any) {
     console.log("purge started")
-    await asyncForEach(profile.minecraft.forceCheck, async (entry:string) => {
+    await asyncForEachParallel(profile.minecraft.forceCheck, async (entry:string) => {
         const currentFileList: string[] = await ipcRenderer.invoke("getAllFiles", path.resolve( pathToMc, profile.minecraft.name, entry))
-        await asyncForEach(currentFileList, async (file:string) => {
+        await asyncForEachParallel(currentFileList, async (file:string) => {
             const serverFilename = "updates"+file.replace(pathToMc, "").replaceAll("\\","/");
             console.log("checking ", serverFilename)
             let legalFile = false;
-            await asyncForEach(pack, async (serverFile:any) => {
+            await asyncForEachParallel(pack, async (serverFile:any) => {
                 //console.log("debug ", serverFile)
                 if (serverFile.path==serverFilename) {
                     const legality = await ipcRenderer.invoke("checkfile", file, serverFile.sha256);

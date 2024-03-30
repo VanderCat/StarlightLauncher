@@ -5,7 +5,7 @@ import yaml from "yaml"
 import path from "node:path"
 const os = require("node:os")
 
-export const url = 'http://localhost:3000/'//'http://starlight.vanderc.at/api/' // CHANGEME
+export const url = 'https://play.vanderc.at/'//'http://starlight.vanderc.at/api/' // CHANGEME
 
 export async function apiRequest(endpoint:string, data:any) {
     const response = await Axios.post(url+"api/"+endpoint, data)
