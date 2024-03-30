@@ -93,7 +93,7 @@ async function download(progress:Ref, skipList?:string[]) {
                 skipList.forEach((entry: string) => {
                     skip = skip || betterPath.startsWith(entry)
                 })
-            if (!(fileSame && skip)) {
+            if (!(fileSame || skip)) {
                 console.log('[DOWNLOAD] downloading', element.path, "to", pathToFile)
                 const starTime = Date.now()
                 await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
