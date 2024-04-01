@@ -78,6 +78,7 @@ async function fetchInfo(info: any[], progress:Ref) {
 }
 const pathToMc = path.resolve(app.getPath("appData"), ".starlightmc")
 async function download(progress:Ref, skipList?:string[]) {
+    console.log("using skiplist ",skipList)
     try {
         const info = await getPackageInfo(progress.value.name)
         await fetchInfo(info, progress)
@@ -85,15 +86,16 @@ async function download(progress:Ref, skipList?:string[]) {
         progress.value.started = true
         await asyncForEach(info, async element => {
             const pathSep = element.path.split("/")
+            const serverPath = pathSep.slice(1).join("/")
             const betterPath = pathSep.slice(1).join(path.sep)
             const pathToFile = path.resolve(pathToMc, betterPath) //TODO: Change
             const fileSame = await ipcRenderer.invoke("checkfile", pathToFile, element.sha256)
             let skip = false
             if (skipList)
                 skipList.forEach((entry: string) => {
-                    skip = skip || betterPath.startsWith(entry)
+                    skip = skip || betterPath.startsWith(serverPath)
                 })
-            if (!(fileSame || skip)) {
+            if (!(fileSame || skip) || !await ipcRenderer.invoke("checkpath", pathToFile)) {
                 console.log('[DOWNLOAD] downloading', element.path, "to", pathToFile)
                 const starTime = Date.now()
                 await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
@@ -153,7 +155,7 @@ async function downloadJava(progress:Ref, profile:any) { //TODO: refactor
     }
 }
 function downloadAll(profile:any, skipFileList: string[]) {
-    const funcs = [download(progress.assets),download(progress.minecraft, skipFileList)]
+    const funcs = [download(progress.assets),download(progress.minecraft, profile.minecraft.skipCheck)]
     if (jvm.bundledJava) {
         funcs.push(downloadJava(progress.java, profile))
     }
