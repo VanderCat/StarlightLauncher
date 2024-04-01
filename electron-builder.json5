@@ -49,9 +49,9 @@
         "arch":"x64",
         "target": "tar.gz"
       },
-      {
+      /*{
         "target": "deb"
-      }
+      }*/
     ],
     "artifactName": "${productName}_${version}.${ext}",
     "icon": "public/favicon.ico"

@@ -21,7 +21,7 @@ steps:
   - name: release
     path: /root/release
   commands:
-  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").tar.gz" "/root/release/linux/Starlight Launcher.tar.gz"
+  - bash -c 'ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").tar.gz" "/root/release/linux/Starlight Launcher.tar.gz"''
 #  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").deb" "/root/release/linux/Starlight Launcher.deb" 
 volumes:
 - name: cache
@@ -57,8 +57,8 @@ steps:
   - name: release
     path: /root/release
   commands:
-  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").zip" "/root/release/win32/Starlight Launcher.zip"
-  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").exe" "/root/release/win32/Starlight Launcher.exe" 
+  - bash -c 'ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").zip" "/root/release/win32/Starlight Launcher.zip"'
+  - bash -c 'ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").exe" "/root/release/win32/Starlight Launcher.exe"'
 
 volumes:
 - name: cache
