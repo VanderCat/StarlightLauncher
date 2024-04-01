@@ -1,14 +1,18 @@
 {
   "name": "starlightlauncher",
-  "version": "0.0.16",
+  "version": "1.0",
   "main": "dist-electron/main/index.js",
   "description": "[Launcher] Minecraft launcher with custom asset server",
   "author": "VanderCat",
   "license": "MIT",
+  "email": "example@example.org",
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build && electron-builder"
+    "prebuild": "vue-tsc --noEmit && vite build",
+    "build": "yarn prebuild && electron-builder",
+    "build:win32": "yarn prebuild && electron-builder -w",
+    "build:linux": "yarn prebuild && electron-builder -l"
   },
   "engines": {
     "node": "^14.18.0 || >=16.0.0"

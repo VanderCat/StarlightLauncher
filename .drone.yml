@@ -1,0 +1,72 @@
+kind: pipeline
+type: docker
+name: linux-x64
+
+steps:
+- name: build
+  image: electronuserland/builder
+  volumes:
+  - name: cache
+    path: /root/.cache/electron-builder
+  - name: cache-builder
+    path: /root/.cache/electron
+  - name: release
+    path: /root/release
+  commands:
+  - yarn
+  - yarn build:linux
+- name: symlink
+  image: electronuserland/builder
+  volumes:
+  - name: release
+    path: /root/release
+  commands:
+  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").tar.gz" "/root/release/linux/Starlight Launcher.tar.gz"
+  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").deb" "/root/release/linux/Starlight Launcher.deb" 
+volumes:
+- name: cache
+  host:
+    path: ~/.cache/electron
+- name: cache-builder
+  host:
+    path: ~/.cache/electron-builder
+- name: release
+  host:
+    path: ~/starlight_release
+---
+kind: pipeline
+type: docker
+name: windows-x64
+
+steps:
+- name: build
+  image: electronuserland/builder:wine
+  volumes:
+  - name: cache
+    path: /root/.cache/electron-builder
+  - name: cache-builder
+    path: /root/.cache/electron
+  - name: release
+    path: /root/release
+  commands:
+  - yarn
+  - yarn build:win32
+- name: symlink
+  image: electronuserland/builder
+  volumes:
+  - name: release
+    path: /root/release
+  commands:
+  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").zip" "/root/release/win32/Starlight Launcher.zip"
+  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").exe" "/root/release/win32/Starlight Launcher.exe" 
+
+volumes:
+- name: cache
+  host:
+    path: ~/.cache/electron
+- name: cache-builder
+  host:
+    path: ~/.cache/electron-builder
+- name: release
+  host:
+    path: ~/starlight_release

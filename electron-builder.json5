@@ -4,10 +4,10 @@
 {
   "appId": "ru.vandercat.starlight.launcher",
   "productName": "Starlight Launcher",
-  "copyright": "Copyleft © 2021 ${author}",
+  "copyright": "Copyleft © 2024 ${author}",
   //"asar": true,
   "directories": {
-    "output": "release/${version}"
+    "output": "release/${platform}/"
   },
   "files": [
     "dist-electron",
@@ -16,7 +16,13 @@
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": [
-      "dmg"
+      {
+        "target": "dmg",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      }
     ]
   },
   "win": {
@@ -26,6 +32,25 @@
         "arch": [
           "x64"
         ]
+      },
+      {
+        "target": "zip",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}_${version}.${ext}",
+    "icon": "public/favicon.ico"
+  },
+  "linux": {
+    "target": [
+      {
+        "arch":"x64",
+        "target": "tar.gz"
+      },
+      {
+        "target": "deb"
       }
     ],
     "artifactName": "${productName}_${version}.${ext}",
