@@ -7,11 +7,11 @@ steps:
   image: electronuserland/builder
   volumes:
   - name: cache
-    path: ./.cache/electron-builder
+    path: /drone/src/electron-builder
   - name: cache-builder
-    path: ./.cache/electron
+    path: /drone/src/electron
   - name: release
-    path: ./release
+    path: /drone/src/release
   commands:
   - yarn
   - yarn build:linux
@@ -36,11 +36,11 @@ steps:
   image: electronuserland/builder:wine
   volumes:
   - name: cache
-    path: ./.cache/electron-builder
+    path: /drone/src/.cache/electron-builder
   - name: cache-builder
-    path: ./.cache/electron
+    path: /drone/src/.cache/electron
   - name: release
-    path: ./release
+    path: /drone/src/release
   commands:
   - yarn
   - yarn build:win32
