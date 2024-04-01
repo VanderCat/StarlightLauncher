@@ -1,6 +1,6 @@
 {
   "name": "starlightlauncher",
-  "version": "1.0",
+  "version": "1.0.0",
   "main": "dist-electron/main/index.js",
   "description": "[Launcher] Minecraft launcher with custom asset server",
   "author": "VanderCat",

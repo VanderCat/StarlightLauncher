@@ -22,7 +22,7 @@ steps:
     path: /root/release
   commands:
   - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").tar.gz" "/root/release/linux/Starlight Launcher.tar.gz"
-  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").deb" "/root/release/linux/Starlight Launcher.deb" 
+#  - ln -s "/root/release/linux/Starlight Launcher_$(npm pkg get version --workspaces=false | tr -d \").deb" "/root/release/linux/Starlight Launcher.deb" 
 volumes:
 - name: cache
   host:
