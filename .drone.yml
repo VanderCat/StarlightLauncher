@@ -26,13 +26,13 @@ steps:
 volumes:
 - name: cache
   host:
-    path: ~/.cache/electron
+    path: /tmp/cache/electron
 - name: cache-builder
   host:
-    path: ~/.cache/electron-builder
+    path: /tmp/cache/electron-builder
 - name: release
   host:
-    path: ~/starlight_release
+    path: /home/vandercat/starlight_release
 ---
 kind: pipeline
 type: docker
@@ -63,10 +63,10 @@ steps:
 volumes:
 - name: cache
   host:
-    path: ~/.cache/electron
+    path: /tmp/cache/electron
 - name: cache-builder
   host:
-    path: ~/.cache/electron-builder
+    path: /tmp/cache/electron-builder
 - name: release
   host:
-    path: ~/starlight_release
+    path: /home/vandercat/starlight_release
