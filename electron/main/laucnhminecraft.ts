@@ -89,10 +89,12 @@ async function prepareJvmArgs(profile:any, jvm:any, location:string) {
     args.concat(jvmArgs)
     console.log(location,profile.minecraft.name,"natives",os.platform(),os.arch())
     //args.push("-Duser.dir="+path.resolve(location,profile.minecraft.name))
+    args.push("-Xms"+Math.floor(jvm.ram/2)+"M")
+    args.push("-Xmx"+jvm.ram+"M")
     args.push("-Djava.library.path="+path.resolve(location,profile.minecraft.name,"natives",os.platform(),os.arch()))
     args.push("-Dminecraft.launcher.brand=Starlight")
-    args.push("-Dminecraft.launcher.version=0.1")
-    args.push("-Dlog4j2.configurationFile="+path.resolve(path.dirname(app.getPath("exe")), "log4jcfg.xml"))
+    args.push("-Dminecraft.launcher.version=1.0.1")
+    args.push("-Dlog4j2.configurationFile="+path.resolve(location, "log4jcfg.xml"))
     const cp = await prepareClasspath(profile, location)
     args.push("-cp", cp)
     return args
@@ -122,6 +124,35 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, Pro
     const jvm = await cfg.loadConfig(null, "jvm")
     const profile = await loadProfile(e, Profile)
     const location = path.resolve(app.getPath("appData"), ".starlightmc")
+    if (!(await fs.pathExists(path.resolve(location, "log4jcfg.xml"))))
+    { //FIXME: i should not embed the file in script
+        fs.writeFileSync(path.resolve(location, "log4jcfg.xml"), `<?xml version="1.0" encoding="UTF-8"?>
+        <Configuration status="WARN">
+            <Appenders>
+                <Console name="SysOut" target="SYSTEM_OUT">
+                    <!--<JsonTemplateLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true" includeTimeMillis="true" />-->
+                    <PatternLayout 
+                      pattern='{"timeMillis":%d{UNIX_MILLIS}, "level":"%level", "message":"%enc{%msg{ansi}\n%rEx}{json}", "thread":"%t"}\n' disableAnsi="false"/>
+                </Console>
+                <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
+                    <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg{nolookups}%n" />
+                    <Policies>
+                        <TimeBasedTriggeringPolicy />
+                        <OnStartupTriggeringPolicy />
+                    </Policies>
+                </RollingRandomAccessFile>
+            </Appenders>
+            <Loggers>
+                <Root level="info">
+                    <filters>
+                        <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
+                    </filters>
+                    <AppenderRef ref="SysOut"/>
+                    <AppenderRef ref="File"/>
+                </Root>
+            </Loggers>
+        </Configuration>`) 
+    }
     const jvmArgs = await prepareJvmArgs(profile, jvm, location)
     const clientArgs = prepareClientArgs(profile, location)
     const customArgs =  jvm.javaArgs==""?[]:jvm.javaArgs.split(" ")

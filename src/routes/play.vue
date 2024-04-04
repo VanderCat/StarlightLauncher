@@ -86,23 +86,24 @@ async function download(progress:Ref, skipList?:string[]) {
         progress.value.started = true
         await asyncForEach(info, async element => {
             const pathSep = element.path.split("/")
-            const serverPath = pathSep.slice(1).join("/")
+            const serverPath = pathSep.slice(2).join("/")
             const betterPath = pathSep.slice(1).join(path.sep)
             const pathToFile = path.resolve(pathToMc, betterPath) //TODO: Change
             const fileSame = await ipcRenderer.invoke("checkfile", pathToFile, element.sha256)
             let skip = false
             if (skipList)
                 skipList.forEach((entry: string) => {
-                    skip = skip || betterPath.startsWith(serverPath)
+                    skip = skip || serverPath.startsWith(entry)
                 })
-            if (!(fileSame || skip) || !await ipcRenderer.invoke("checkpath", pathToFile)) {
-                console.log('[DOWNLOAD] downloading', element.path, "to", pathToFile)
-                const starTime = Date.now()
-                await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
-                progress.value.downloadSpeed = element.size/(Date.now()-starTime)
-            } else {
-                progress.value.downloadSpeed = 0
-            }
+            if (!skip || !await ipcRenderer.invoke("checkpath", pathToFile))
+                if (!(fileSame ) ) {
+                    console.log('[DOWNLOAD] downloading', element.path, "to", pathToFile)
+                    const starTime = Date.now()
+                    await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
+                    progress.value.downloadSpeed = element.size/(Date.now()-starTime)
+                } else {
+                    progress.value.downloadSpeed = 0
+                }
             progress.value.currentSize+=element.size
         });
     } 
