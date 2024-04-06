@@ -8,6 +8,9 @@ import { useAuthStore } from '../stores/auth';
 
 import {ref} from 'vue';
 import { AxiosError } from 'axios';
+import{ useI18n } from "vue-i18n";
+
+const { t } = useI18n()
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -42,7 +45,7 @@ const rules = ref([
     (value: string) => {
         if (value) return true
 
-        return 'ну заполни а'
+        return t('login.empty')
     }
 ])
 async function test() {
@@ -67,18 +70,18 @@ async function test() {
     <div id="mainview">
         <div id="freespace">
             <v-card theme="dark" style="overflow: auto" height="100% !important">
-                <div class="header login-header">вход</div>
+                <div class="header login-header">{{$t("login.title")}}</div>
                 <div class="main">
                     <v-form v-model="valid" class="login-main" :disabled="boolLogingIn">
                         <v-text-field
                             v-model="username"
-                            label="юзверьнейм"
+                            :label="$t('login.username')"
                             :rules="rules"
                             required
                         />
                         <v-text-field
                             v-model="password"
-                            label="пароль"
+                            label="$t('login.password')"
                             :rules="rules"
                             type="password"
                             required
@@ -90,10 +93,10 @@ async function test() {
         </div>
         <controls>
             <template v-slot:left>
-                <playbutton @click="test" :class="(valid&&!boolLogingIn)?'':'button-disabled'">вход</playbutton>
+                <playbutton @click="test" :class="(valid&&!boolLogingIn)?'':'button-disabled'">{{$t('login.button.login')}}</playbutton>
             </template>
             <template v-slot:right>
-                <a href="https://starlight.vanderc.at/register" target="_blank"><playbutton secondary>регнуться</playbutton></a>
+                <a href="https://starlight.vanderc.at/register" target="_blank"><playbutton secondary>{{$t('login.button.register')}}</playbutton></a>
             </template>
         </controls>
     </div>

@@ -67,10 +67,10 @@ function test() {
         </div>
         <controls>
             <template v-slot:left>
-                <playbutton @click="test">ок</playbutton>
+                <playbutton @click="test">{{$t("ok")}}</playbutton>
             </template>
             <template v-slot:right>
-                <router-link to="/settings"><playbutton secondary>отмена</playbutton></router-link>
+                <router-link to="/settings"><playbutton secondary>{{$t("cancel")}}</playbutton></router-link>
             </template>
         </controls>
     </div>

@@ -12,12 +12,22 @@ import "@fontsource/roboto-mono"
 import "@fontsource/roboto-mono/variable-full.css";
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import "./main.css"
+import { createI18n } from 'vue-i18n'
+import locale from "./translations"
+
+const i18n = createI18n({
+  locale: navigator.language.split("-")[0],
+  legacy: false,
+  fallbackLocale: 'ru',
+  messages: locale
+})
 
 createApp(App)
   .use(vuetify)
   .use(router)
   .use(pinia)
   .use(VueVirtualScroller)
+  .use(i18n)
   .mount('#app')
   .$nextTick(() => {
     postMessage({ payload: 'removeLoading' }, '*')

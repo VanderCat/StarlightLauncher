@@ -32,7 +32,7 @@ onUnmounted(()=>{
 <template>
     <div id="mainview" class="padding fullHeight">
         <v-card height="100%" class="mainWrapper padding">
-            <div class="header">консоль</div>
+            <div class="header">{{$t("console_title")}}</div>
             <div class="consoleLog" ref="LogHolder">
                 <div class="entry" v-for="entry in Logs">
                     <span class="entryDate">{{DateTime.fromMillis(entry.timeMillis??0).toLocaleString(DateTime.TIME_24_WITH_SECONDS)}}</span>

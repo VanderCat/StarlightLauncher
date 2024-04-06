@@ -12,6 +12,9 @@ import path from 'node:path';
 import { useJvmSettingsStore } from '../stores/jvmSettings'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue';
+import{ useI18n } from "vue-i18n";
+
+const { t } = useI18n()
 
 const jvm = useJvmSettingsStore()
 const router = useRouter()
@@ -19,7 +22,7 @@ const router = useRouter()
 jvm.loadSettings()
 function getFile() {
     const dir = dialog.showOpenDialogSync({
-        title: "Выберете папку с Java",
+        title: t("java.dialog.title"),
         properties: [
             "openDirectory",
             "treatPackageAsDirectory"
@@ -48,7 +51,7 @@ async function save() {
             <v-card theme="dark" style="overflow: auto" height="100% !important">
                 <v-form ref="form">
                 <v-list lines="one">
-                    <v-list-subheader>Настройки Java VM</v-list-subheader>
+                    <v-list-subheader>{{$t("settings.java.title")}}</v-list-subheader>
 
                     <v-list-item>
                         <template v-slot:prepend="{ isActive }">
@@ -58,31 +61,31 @@ async function save() {
                         </v-list-item-action>
                         </template>
 
-                        <v-list-item-title>Использовать встроенную Java</v-list-item-title>
+                        <v-list-item-title>{{$t("settings.java.use_bundled")}}</v-list-item-title>
                     </v-list-item>
                     <v-list-item>
-                        <v-text-field color="primary" density="compact" label="Путь до javaw.exe" v-model="jvm.javaPath" :disabled="jvm.bundledJava" :rules="[rules.validPath]" append-icon="mdi-file-search" @click:append="getFile"></v-text-field>
+                        <v-text-field color="primary" density="compact" :label="$t('settings.java.path_hint')" v-model="jvm.javaPath" :disabled="jvm.bundledJava" :rules="[rules.validPath]" append-icon="mdi-file-search" @click:append="getFile"></v-text-field>
                     </v-list-item>
                     <v-list-item>
-                        <v-slider color="primary" density="compact" step="512" min="1024" label="ОЗУ" :max="Math.min(8192,maxRam)" variant="underlined" show-ticks v-model="jvm.ram" :rules="[rules.notExceedMaxRam]">
+                        <v-slider color="primary" density="compact" step="512" min="1024" :label="$t('settings.java.ram')" :max="Math.min(8192,maxRam)" variant="underlined" show-ticks v-model="jvm.ram" :rules="[rules.notExceedMaxRam]">
                             <template v-slot:append>
                                 <v-text-field v-model="jvm.ram" hide-details single-line density="compact"  style="width: 70px" :rules="[rules.numOnly, rules.notExceedMaxRam]"/>
                             </template>
                         </v-slider>
                     </v-list-item>
                     <v-list-item>
-                        <v-textarea color="primary" density="compact" label="Аргументы JVM" v-model="jvm.javaArgs"></v-textarea>
+                        <v-textarea color="primary" density="compact" :label="$t('settings.java.args')" v-model="jvm.javaArgs"></v-textarea>
                     </v-list-item>
                 </v-list></v-form>
             </v-card>
         </div>
         <controls>
             <template v-slot:left>
-                <playbutton @click="save">ок</playbutton>
-                <router-link to="/settings/mods"><playbutton secondary>моды</playbutton></router-link>
+                <playbutton @click="save">{{ $t('ok') }}</playbutton>
+                <router-link to="/settings/mods"><playbutton secondary>{{$t('settings.mods')}}</playbutton></router-link>
             </template>
             <template v-slot:right>
-                <router-link to="/"><playbutton secondary>отмена</playbutton></router-link>
+                <router-link to="/"><playbutton secondary>{{$t('cancel')}}</playbutton></router-link>
             </template>
         </controls>
     </div>
@@ -98,13 +101,13 @@ const maxRam = process.getSystemMemoryInfo().total/1024
         rules: {
             numOnly: (value: string) => {
                 const pattern = /^[0-9]+$/
-                return pattern.test(value) || 'Invalid'
+                return pattern.test(value) || t('settings.java.error.notANumber')
             },
             notExceedMaxRam: (value: number) => {
-                return maxRam > value || 'Выделено больше чем доступно в системе'
+                return maxRam > value || t('settings.java.error.excessRam')
             },
             validPath: (value: string) => {
-                return path.isAbsolute(value) || value=="" || 'Неверный путь'
+                return path.isAbsolute(value) || value=="" || t('settings.java.error.wrongPath')
             }
         },
         maxRam

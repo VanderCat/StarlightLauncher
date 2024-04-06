@@ -10,7 +10,9 @@ import { useJvmSettingsStore } from '../stores/jvmSettings'
 
 import { getJavaInfo, getPackageInfo, getProfile, url } from "../serverapi"
 import { asyncForEach, asyncForEachParallel } from "../utils"
-import Console from "./console.vue"
+import{ useI18n } from "vue-i18n";
+
+const { t } = useI18n()
 
 const jvm = useJvmSettingsStore()
 const route = useRoute()
@@ -52,14 +54,14 @@ const dialog = ref({
     error: "Unknown error!",
     actions: {
         ok: {
-            text: "окей че",
+            text: t("play.error.cancel"),
             action: () => {
                 dialog.value.show = false
                 router.push("/")
             }
         },
         continue: {
-                text: "пофиг",
+                text: t("play.error.launch"),
                 action: () => {
                     dialog.value.show = false
                     startMinecraft()
@@ -222,14 +224,14 @@ onMounted(async ()=>{
             }
         }
         if (hasErrors) {
-            dialog.value.error = "Произошли ошибки при обновлении клиента игры :/"
+            dialog.value.error = t("play.error.failed_download")
             dialog.value.show = true
         } 
         else {
             await startMinecraft()
         }
     } else {
-        dialog.value.error = "Нет подключения к серверу :/"
+        dialog.value.error = t("play.error.no_connection")
         dialog.value.show = true
     }
 })
@@ -239,7 +241,7 @@ onMounted(async ()=>{
 <template>
     <div id="mainview" class="padding fullHeight">
         <v-card height="100%" class="mainWrapper">
-            <div class="header">cча все будет падажжи</div>
+            <div class="header">{{$t("loading.title")}}</div>
             <div class="main">
                 <div class="iconHolder">
                     <v-icon icon="mdi-language-java" size="128"></v-icon>
@@ -261,7 +263,7 @@ onMounted(async ()=>{
             </div>
             <div class="downloadInfo">
                 <span>{{Math.floor((progress.java.value.downloadSpeed+progress.assets.value.downloadSpeed+progress.minecraft.value.downloadSpeed)*1000/1024/1024)}}</span>
-                <span> МиБ/c</span>
+                <span> {{$t("loading.speed")}}</span>
             </div>
             <v-progress-linear 
                 :indeterminate="!(progress.java.value.started||progress.assets.value.started||progress.minecraft.value.started)" 

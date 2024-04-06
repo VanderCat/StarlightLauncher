@@ -7,6 +7,7 @@ import iconbutton from '../components/iconbutton.vue'
 
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+
 const auth = useAuthStore();
 const router = useRouter();
 if (auth.accessToken == null) {
@@ -21,7 +22,7 @@ if (auth.accessToken == null) {
         </div>
         <controls>
             <template v-slot:left>
-                <router-link to="/play/agusha"><playbutton>играть</playbutton></router-link>
+                <router-link to="/play/agusha"><playbutton>{{$t("play.button")}}</playbutton></router-link>
             </template>
             <template v-slot:right>
                 <router-link to="/settings"><iconbutton/></router-link>
