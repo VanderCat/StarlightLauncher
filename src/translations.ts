@@ -8,7 +8,7 @@ export default {
                 register: "регунться"
             },
             username: "юзверьнейм",
-            name: "пароль"
+            password: "пароль"
         },
         play: {
             button: 'играть'
@@ -39,7 +39,15 @@ export default {
     },
     en: {
         console_title: 'console',
-        login_title: 'login',
+        login: {
+            title: 'Login',
+            button: {
+                login: "login",
+                register: "register"
+            },
+            username: "username",
+            password: "password"
+        },
         play: {
             button: 'play'
         },

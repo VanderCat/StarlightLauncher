@@ -54,14 +54,14 @@ const dialog = ref({
     error: "Unknown error!",
     actions: {
         ok: {
-            text: t("play.error.cancel"),
+            text: t("loading.error.cancel"),
             action: () => {
                 dialog.value.show = false
                 router.push("/")
             }
         },
         continue: {
-                text: t("play.error.launch"),
+                text: t("loading.error.launch"),
                 action: () => {
                     dialog.value.show = false
                     startMinecraft()
@@ -224,14 +224,14 @@ onMounted(async ()=>{
             }
         }
         if (hasErrors) {
-            dialog.value.error = t("play.error.failed_download")
+            dialog.value.error = t("loading.error.failed_download")
             dialog.value.show = true
         } 
         else {
             await startMinecraft()
         }
     } else {
-        dialog.value.error = t("play.error.no_connection")
+        dialog.value.error = t("loading.error.no_connection")
         dialog.value.show = true
     }
 })

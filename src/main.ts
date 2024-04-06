@@ -18,7 +18,7 @@ import locale from "./translations"
 const i18n = createI18n({
   locale: navigator.language.split("-")[0],
   legacy: false,
-  fallbackLocale: 'ru',
+  fallbackLocale: 'en',
   messages: locale
 })
 

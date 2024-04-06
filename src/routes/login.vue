@@ -56,10 +56,10 @@ async function test() {
         await auth.saveLogin();
         router.push("/")
     } catch (error) {
+        boolLogingIn.value = false
         console.log(error)
         const err = error as AxiosError;
         errorText.value = (err.response?.data as any).errorMessage;
-        boolLogingIn.value = false
     }
     boolLogingIn.value = false;
 }
@@ -81,7 +81,7 @@ async function test() {
                         />
                         <v-text-field
                             v-model="password"
-                            label="$t('login.password')"
+                            :label="$t('login.password')"
                             :rules="rules"
                             type="password"
                             required
