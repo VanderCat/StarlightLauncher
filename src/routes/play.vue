@@ -8,9 +8,10 @@ import { ipcRenderer } from "electron"
 import { app } from "@electron/remote"
 import { useJvmSettingsStore } from '../stores/jvmSettings'
 
-import { getJavaInfo, getPackageInfo, getProfile, url } from "../serverapi"
+import { getJavaInfo, getPackageInfo, getProfile} from "../serverapi"
 import { asyncForEach, asyncForEachParallel } from "../utils"
 import{ useI18n } from "vue-i18n";
+import urllist from "../../electron/urllist"
 
 const { t } = useI18n()
 
@@ -101,7 +102,7 @@ async function download(progress:Ref, skipList?:string[]) {
                 if (!(fileSame ) ) {
                     console.log('[DOWNLOAD] downloading', element.path, "to", pathToFile)
                     const starTime = Date.now()
-                    await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
+                    await ipcRenderer.invoke("download", urllist.launcherHost+"/"+element.path, pathToFile)
                     progress.value.downloadSpeed = element.size/(Date.now()-starTime)
                 } else {
                     progress.value.downloadSpeed = 0
@@ -133,7 +134,7 @@ async function downloadJava(progress:Ref, profile:any) { //TODO: refactor
                 console.log('[JAVA] downloading', element.path, "to", pathToFile)
                 const starTime = Date.now()
                 try {
-                    await ipcRenderer.invoke("download", url+"/"+element.path, pathToFile)
+                    await ipcRenderer.invoke("download", urllist.launcherHost+"/"+element.path, pathToFile)
                 } catch {
                     console.log("[JAVA] Failed download", element.path)
                 }
@@ -143,7 +144,7 @@ async function downloadJava(progress:Ref, profile:any) { //TODO: refactor
             }
             progress.value.currentSize+=element.size
             if (path.basename(element.path, "w.exe") == "java") {
-                ipcRenderer.invoke("writefile", path.resolve(app.getPath("userData"), ".javapath"), pathToFile)
+                ipcRenderer.invoke("writefile", path.resolve(path.resolve(app.getPath("appData"), ".starlightmc"), ".javapath"), pathToFile)
             }
         });
     } 

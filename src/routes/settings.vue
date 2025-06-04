@@ -101,13 +101,13 @@ const maxRam = process.getSystemMemoryInfo().total/1024
         rules: {
             numOnly: (value: string) => {
                 const pattern = /^[0-9]+$/
-                return pattern.test(value) || t('settings.java.error.notANumber')
+                return pattern.test(value) || 'settings.java.error.notANumber'
             },
             notExceedMaxRam: (value: number) => {
-                return maxRam > value || t('settings.java.error.excessRam')
+                return maxRam > value || 'settings.java.error.excessRam'
             },
             validPath: (value: string) => {
-                return path.isAbsolute(value) || value=="" || t('settings.java.error.wrongPath')
+                return path.isAbsolute(value) || value=="" || 'settings.java.error.wrongPath'
             }
         },
         maxRam

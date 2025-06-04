@@ -9,6 +9,7 @@ import { useAuthStore } from '../stores/auth';
 import {ref} from 'vue';
 import { AxiosError } from 'axios';
 import{ useI18n } from "vue-i18n";
+import urls from "../../electron/urllist"
 
 const { t } = useI18n()
 
@@ -96,7 +97,7 @@ async function test() {
                 <playbutton @click="test" :class="(valid&&!boolLogingIn)?'':'button-disabled'">{{$t('login.button.login')}}</playbutton>
             </template>
             <template v-slot:right>
-                <a href="https://starlight.vanderc.at/register" target="_blank"><playbutton secondary>{{$t('login.button.register')}}</playbutton></a>
+                <a :href=urls.registerLink target="_blank"><playbutton secondary>{{$t('login.button.register')}}</playbutton></a>
             </template>
         </controls>
     </div>

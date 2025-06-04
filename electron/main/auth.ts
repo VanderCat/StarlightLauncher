@@ -4,7 +4,7 @@ import yaml from 'yaml'
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { check } from '../utils'
 
-const loginlocation = path.resolve(app.getPath("userData"), ".session.yml")
+const loginlocation = path.resolve(path.resolve(app.getPath("appData"), ".starlightmc"), ".session.yml")
 
 export function loadLastLogin(e:Event) {
     

@@ -4,8 +4,8 @@ import { app } from "@electron/remote"
 import yaml from "yaml"
 import path from "node:path"
 const os = require("node:os")
-
-export const url = 'https://play.vanderc.at/'//'http://starlight.vanderc.at/api/' // CHANGEME
+import urls from "../electron/urllist"
+const url = urls.launcherHost
 
 export async function apiRequest(endpoint:string, data:any) {
     const response = await Axios.post(url+"api/"+endpoint, data)
@@ -23,7 +23,7 @@ export async function getJavaInfo(cfg:any) {
 export async function getProfile(profileName: string) {
     try {
         const profile = await apiRequest("profiles.get", {name: profileName+".yml"})
-        ipcRenderer.invoke("writefile", path.resolve(app.getPath("userData"), "profiles", profileName+".yml"), profile)
+        ipcRenderer.invoke("writefile", path.resolve(path.resolve(app.getPath("appData"), ".starlightmc"), "profiles", profileName+".yml"), profile)
         return yaml.parse(profile) 
     }
     catch {

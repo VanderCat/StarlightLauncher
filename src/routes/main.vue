@@ -25,7 +25,7 @@ const router = useRouter();
         </div>
         <controls>
             <template v-slot:left>
-                <router-link to="/play/agusha"><playbutton>{{$t("play.button")}}</playbutton></router-link>
+                <router-link to="/play/dc12"><playbutton>{{$t("play.button")}}</playbutton></router-link>
             </template>
             <template v-slot:right>
                 <router-link to="/settings"><iconbutton/></router-link>

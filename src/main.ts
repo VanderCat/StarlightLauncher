@@ -35,22 +35,22 @@ createApp(App)
 
 
 import { ipcRenderer } from 'electron'
-ipcRenderer.on('minecraft-log', (e:Event, text:Uint8Array)=>{
-  const buffer = Buffer.from(text)
-  const string = buffer.toString("utf-8")
+ipcRenderer.on('minecraft-log', (e:Event, text:string)=>{
+  //const buffer = Buffer.from(text)
+  //const string = buffer.toString("utf-8")
   try {
-    string.split("\n").forEach(msg => {
-      if (msg!=""){
-      const parsedMsg = JSON.parse(msg)
-      const event = new CustomEvent("MinecraftMessage", {detail:parsedMsg})
-      document.dispatchEvent(event)
+    text.split("\n").forEach(msg => {
+      if (msg!="") {
+        const parsedMsg = JSON.parse(msg)
+        const event = new CustomEvent("MinecraftMessage", {detail:parsedMsg})
+        document.dispatchEvent(event)
       }
     });
   } 
   catch (err) {
     console.warn(err)
-    console.log(string)
-    const event = new CustomEvent("MinecraftMessage", {detail:string})
+    console.log(text)
+    const event = new CustomEvent("MinecraftMessage", {detail:text})
     document.dispatchEvent(event)
   }
 })

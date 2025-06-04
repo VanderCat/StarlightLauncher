@@ -42,6 +42,20 @@ const indexHtml = join(process.env.DIST, 'index.html')
 
 let sendMessage
 
+function UpsertKeyValue(obj, keyToChange, value) {
+  const keyToChangeLower = keyToChange.toLowerCase();
+  for (const key of Object.keys(obj)) {
+    if (key.toLowerCase() === keyToChangeLower) {
+      // Reassign old key
+      obj[key] = value;
+      // Done
+      return;
+    }
+  }
+  // Insert at end instead
+  obj[keyToChange] = value;
+}
+
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Starlight Launcher',
@@ -58,6 +72,23 @@ async function createWindow() {
       contextIsolation: false,
     },
   })
+
+  win.webContents.session.webRequest.onBeforeSendHeaders(
+    (details, callback) => {
+      const { requestHeaders } = details;
+      UpsertKeyValue(requestHeaders, 'Access-Control-Allow-Origin', ['*']);
+      callback({ requestHeaders });
+    },
+  );
+  
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    const { responseHeaders } = details;
+    UpsertKeyValue(responseHeaders, 'Access-Control-Allow-Origin', ['*']);
+    UpsertKeyValue(responseHeaders, 'Access-Control-Allow-Headers', ['*']);
+    callback({
+      responseHeaders,
+    });
+  });
 
   if (process.env.VITE_DEV_SERVER_URL) { // electron-vite-vue#298
     win.loadURL(url)
@@ -127,7 +158,9 @@ ipcMain.handle('loadConfig', cfg.loadConfig)
 ipcMain.handle('saveConfig', cfg.saveConfig)
 
 import launchMinecraft from './laucnhminecraft'
+import { killMinecraft } from './laucnhminecraft'
 ipcMain.handle('launchMinecraft', (e, profile)=>launchMinecraft(e, sendMessage, profile))
+ipcMain.handle('killMinecraft', (e)=>killMinecraft(e))
 import axios from 'axios'
 import fs from 'fs-extra'
 import crypto from 'crypto'

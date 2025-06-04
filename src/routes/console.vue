@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref, nextTick, Ref } from 'vue';
 import { useRouter } from "vue-router"
 import { DateTime } from "luxon"
+import { ipcRenderer } from 'electron';
 const router = useRouter()
 const Logs = ref<any[]>([])
 const LogHolder = ref<HTMLElement>()
@@ -12,12 +13,12 @@ const onMessage = (event:any)=>{
     const message = event.detail
     console.log(message)
     if (!message.minecraftClosed){
-        Logs.value.push(message)
+        if (LogHolder.value)
+                if (Math.abs(LogHolder.value.scrollHeight - LogHolder.value.clientHeight - LogHolder.value.scrollTop) < 128)
         nextTick(()=>{
-            if (LogHolder.value)
-            if (Math.abs(LogHolder.value.scrollHeight - LogHolder.value.clientHeight - LogHolder.value.scrollTop) < 128)
-            LogHolder.value?.lastElementChild?.scrollIntoView({block: 'end'});
+                    LogHolder.value?.lastElementChild?.scrollIntoView({block: 'end'});
         })
+        Logs.value.push(message)
     }
     else router.push("/")
 }
@@ -27,16 +28,20 @@ onMounted(()=>{
 onUnmounted(()=>{
     document.removeEventListener("MinecraftMessage", onMessage)
 })
+
+async function killMinecraft() {
+    await ipcRenderer.invoke("killMinecraft")
+}
 </script>
 
 <template>
     <div id="mainview" class="padding fullHeight">
         <v-card height="100%" class="mainWrapper padding">
-            <div class="header">{{$t("console_title")}}</div>
+            <div class="header">{{$t("console_title")}}<a @click="killMinecraft" class="kill"> (kill)</a></div>
             <div class="consoleLog" ref="LogHolder">
                 <div class="entry" v-for="entry in Logs">
-                    <span class="entryDate">{{DateTime.fromMillis(entry.timeMillis??0).toLocaleString(DateTime.TIME_24_WITH_SECONDS)}}</span>
-                    <span :class="'level-'+entry.level">[{{entry.thread}}/{{entry.level}}]</span>
+                    <span class="entryDate">{{(entry.timeMillis?DateTime.fromMillis(entry.timeMillis):DateTime.now()).toLocaleString(DateTime.TIME_24_WITH_SECONDS)}}</span>
+                    <span v-if="entry.level"  :class="'level-'+entry.level">[{{entry.thread}}/{{entry.level}}]</span>
                     <span class="entryText">{{entry.message?.replace(/^\s+|\s+$/g, "")}}</span>
                 </div>
             </div>
@@ -120,6 +125,13 @@ onUnmounted(()=>{
 }
 .entry>span::after {
     content: " ";
+}
+
+.kill {
+    opacity: 0.25;
+    &:hover {
+        opacity: 1.0;
+    }
 }
 
 </style>

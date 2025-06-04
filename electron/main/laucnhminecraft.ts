@@ -2,10 +2,13 @@ import * as cfg from './config'
 import os from 'os'
 import path from 'path'
 import fs from 'fs-extra'
-import childProcess from 'child_process'
+import childProcess, { ChildProcessWithoutNullStreams } from 'child_process'
 import {v4 as uuid } from 'uuid'
 import { ipcMain, app } from 'electron'
 import {asyncForEach} from "../utils"
+import * as mod from "./modcontrol"
+import {Profile} from "../../types/profile"
+import urls from "../urllist"
 
 async function loadProfile(e:Event, name:string) {
     const profile = await cfg.loadConfig(e, "profiles/"+name)
@@ -75,7 +78,7 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: string[]) {
 
     return arrayOfFiles
 }
-async function prepareClasspath(profile:any, location:string) {
+async function prepareClasspath(profile: Profile, location:string) {
     let files = []
     await asyncForEach(profile.minecraft.classpath, async cpath => {
         await getAllFiles(path.resolve(location,profile.minecraft.name,cpath), files)
@@ -83,7 +86,7 @@ async function prepareClasspath(profile:any, location:string) {
     return files.join(path.delimiter)
 }
 
-async function prepareJvmArgs(profile:any, jvm:any, location:string) {
+async function prepareJvmArgs(profile: Profile, jvm:any, location:string, profileName:string) {
     let args = parseArgs(profile.minecraft.arguments.jvm)
     let jvmArgs = jvm.javaArgs.split(" ")
     args.concat(jvmArgs)
@@ -93,8 +96,18 @@ async function prepareJvmArgs(profile:any, jvm:any, location:string) {
     args.push("-Xmx"+jvm.ram+"M")
     args.push("-Djava.library.path="+path.resolve(location,profile.minecraft.name,"natives",os.platform(),os.arch()))
     args.push("-Dminecraft.launcher.brand=Starlight")
-    args.push("-Dminecraft.launcher.version=1.0.1")
+    args.push("-Dminecraft.launcher.version="+app.getVersion())
     args.push("-Dlog4j2.configurationFile="+path.resolve(location, "log4jcfg.xml"))
+    if (profile.minecraft.mods != null)
+        if (mod.prepareModList(profile, profileName))
+            args.push("-Dfabric.addMods=@"+path.resolve(location, ".modlist"))
+    if (urls.auth.env == "custom") {
+        args.push("-Dminecraft.api.env=custom")
+        args.push("-Dminecraft.api.auth.host="+urls.auth.authHost)
+        args.push("-Dminecraft.api.account.host="+urls.auth.accountHost)
+        args.push("-Dminecraft.api.session.host="+urls.auth.sessionHost)
+        args.push("-Dminecraft.api.services.host="+urls.auth.servicesHost)
+    }
     const cp = await prepareClasspath(profile, location)
     args.push("-cp", cp)
     return args
@@ -102,7 +115,7 @@ async function prepareJvmArgs(profile:any, jvm:any, location:string) {
 
 import auth from "./auth";
 
-function prepareClientArgs(profile:any, location:string) {
+function prepareClientArgs(profile: Profile, location:string) {
     const authInfo = auth.loadLastLogin(null)
     let args:string[] = []
     args.push("--username", authInfo.user.name)
@@ -120,10 +133,18 @@ function prepareClientArgs(profile:any, location:string) {
     return args
 }
 
-export default async function launchMinecraft(e:Event, sendMessage:Function, Profile:string) {
+export let proc: ChildProcessWithoutNullStreams
+
+export async function killMinecraft(e:Event) {
+    if (!proc) return;
+    proc.kill('SIGKILL')
+}
+
+export default async function launchMinecraft(e:Event, sendMessage:Function, profileName: string) {
+    if (proc) return;
     const jvm = await cfg.loadConfig(null, "jvm")
-    const profile = await loadProfile(e, Profile)
-    const location = path.resolve(app.getPath("appData"), ".starlightmc")
+    const profile: Profile = await loadProfile(e, profileName)
+    const location = cfg.cfgfolder
     if (!(await fs.pathExists(path.resolve(location, "log4jcfg.xml"))))
     { //FIXME: i should not embed the file in script
         fs.writeFileSync(path.resolve(location, "log4jcfg.xml"), `<?xml version="1.0" encoding="UTF-8"?>
@@ -132,7 +153,7 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, Pro
                 <Console name="SysOut" target="SYSTEM_OUT">
                     <!--<JsonTemplateLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true" includeTimeMillis="true" />-->
                     <PatternLayout 
-                      pattern='{"timeMillis":%d{UNIX_MILLIS}, "level":"%level", "message":"%enc{%msg{ansi}\n%rEx}{json}", "thread":"%t"}\n' disableAnsi="false"/>
+                      pattern='{"timeMillis":%d{UNIX_MILLIS}, "level":"%level", "message":"%enc{%msg{ansi}\n%rEx}{json}", "thread":"%t"}%n' disableAnsi="false"/>
                 </Console>
                 <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
                     <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg{nolookups}%n" />
@@ -153,7 +174,8 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, Pro
             </Loggers>
         </Configuration>`) 
     }
-    const jvmArgs = await prepareJvmArgs(profile, jvm, location)
+    console.log(profile)
+    const jvmArgs = await prepareJvmArgs(profile, jvm, location, profileName)
     const clientArgs = prepareClientArgs(profile, location)
     const customArgs =  jvm.javaArgs==""?[]:jvm.javaArgs.split(" ")
     console.log("Custom Args", customArgs)
@@ -168,17 +190,22 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, Pro
         else 
         javaPath = path.resolve(jvm.javaPath, "java")
     }
-    const proc = childProcess.spawn(javaPath, finalArgs, {
-        cwd: path.resolve(location, profile.minecraft.name) //https://github.com/Majrusz/MajruszLibrary/issues/76 :/
+    let cwd = path.resolve(location, profile.minecraft.name);
+    console.log(cwd, javaPath, finalArgs)
+    proc = childProcess.spawn(javaPath, finalArgs, {
+        cwd: cwd //https://github.com/Majrusz/MajruszLibrary/issues/76 :/
     })
+    proc.stdout.setEncoding('utf-8')
     proc.stdout.on('data', (data) => {
+        console.log(data)
         sendMessage(data)
     })
-      
+    proc.stderr.setEncoding('utf-8')
     proc.stderr.on('data', (data) => {
         sendMessage(data)
     })
     proc.on('close', (code) => {
+        proc = null
         sendMessage('{"minecraftClosed":true}')
     })
 }

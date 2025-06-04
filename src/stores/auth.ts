@@ -2,8 +2,9 @@ import { defineStore } from 'pinia'
 import { ipcRenderer } from 'electron'
 import { uniqueId } from 'lodash';
 import axios from 'axios';
+import urls from "../../electron/urllist"
 
-const baseurl = "https://goldenoak.vanderc.at"
+const baseurl = urls.auth.authHost
 
 export const useAuthStore = defineStore('authStore', {
     state: () : AuthInfo => ({
@@ -26,9 +27,14 @@ export const useAuthStore = defineStore('authStore', {
             })
 
             this.accessToken = account.data.accessToken
-            this.uuid = account.data.selectedProfile.id
             this.clientToken = account.data.clientToken
-            this.user = account.data.selectedProfile
+            try {
+                this.uuid = account.data.selectedProfile.id
+                this.user = account.data.selectedProfile
+            }
+            catch (err) {
+                console.error("current auth does not support selectedProfile")
+            }
         },
         async refreshLogin() {
             const account = await axios.post(baseurl+"/refresh", {

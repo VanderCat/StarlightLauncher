@@ -6,7 +6,7 @@ import { stringifyExpression } from '@vue/compiler-core'
 
 import { check } from '../utils'
 
-const cfgfolder = app.getPath("userData")
+export const cfgfolder = path.resolve(app.getPath("appData"), ".starlightmc")
 
 export function loadConfig(e:Event, name:string) {
     const cfglocation = path.resolve(cfgfolder, name+".yml")
