@@ -5,10 +5,14 @@ export default {
             title: 'Вход',
             button: {
                 login: "вход",
-                register: "регунться"
+                register: "регунться",
+                unlogin: "выйти из аккаунта"
             },
             username: "юзверьнейм",
-            password: "пароль"
+            password: "пароль",
+            deviceCode: "Что бы войти, откройте в браузере {url} и используйте код {user_code} или откройте ",
+            mojang: "Use Mojang Auth",
+            empty: "This field can not be empty"
         },
         play: {
             button: 'играть'
@@ -43,10 +47,14 @@ export default {
             title: 'Login',
             button: {
                 login: "login",
-                register: "register"
+                register: "register",
+                unlogin: "change account"
             },
             username: "username",
-            password: "password"
+            password: "password",
+            deviceCode: "To sign in, use a web browser to open the page {url} and use the code {user_code} or visit ",
+            mojang: "Use Mojang Auth",
+            empty: "This field can not be empty"
         },
         play: {
             button: 'play'

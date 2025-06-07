@@ -101,19 +101,21 @@ async function prepareJvmArgs(profile: Profile, jvm:any, location:string, profil
     if (profile.minecraft.mods != null)
         if (mod.prepareModList(profile, profileName))
             args.push("-Dfabric.addMods=@"+path.resolve(location, ".modlist"))
-    if (urls.auth.env == "custom") {
-        args.push("-Dminecraft.api.env=custom")
-        args.push("-Dminecraft.api.auth.host="+urls.auth.authHost)
-        args.push("-Dminecraft.api.account.host="+urls.auth.accountHost)
-        args.push("-Dminecraft.api.session.host="+urls.auth.sessionHost)
-        args.push("-Dminecraft.api.services.host="+urls.auth.servicesHost)
-    }
+    const login = loadLastLogin(null)
+    if (!login.mojang)
+        if (urls.auth.env == "custom") {
+            args.push("-Dminecraft.api.env=custom")
+            args.push("-Dminecraft.api.auth.host="+urls.auth.authHost)
+            args.push("-Dminecraft.api.account.host="+urls.auth.accountHost)
+            args.push("-Dminecraft.api.session.host="+urls.auth.sessionHost)
+            args.push("-Dminecraft.api.services.host="+urls.auth.servicesHost)
+        }
     const cp = await prepareClasspath(profile, location)
     args.push("-cp", cp)
     return args
 }
 
-import auth from "./auth";
+import auth, { loadLastLogin } from "./auth";
 
 function prepareClientArgs(profile: Profile, location:string) {
     const authInfo = auth.loadLastLogin(null)
@@ -191,13 +193,13 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, pro
         javaPath = path.resolve(jvm.javaPath, "java")
     }
     let cwd = path.resolve(location, profile.minecraft.name);
-    console.log(cwd, javaPath, finalArgs)
+    //console.log(cwd, javaPath, finalArgs)
     proc = childProcess.spawn(javaPath, finalArgs, {
         cwd: cwd //https://github.com/Majrusz/MajruszLibrary/issues/76 :/
     })
     proc.stdout.setEncoding('utf-8')
     proc.stdout.on('data', (data) => {
-        console.log(data)
+        //console.log(data)
         sendMessage(data)
     })
     proc.stderr.setEncoding('utf-8')

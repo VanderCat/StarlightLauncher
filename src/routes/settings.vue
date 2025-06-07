@@ -13,6 +13,9 @@ import { useJvmSettingsStore } from '../stores/jvmSettings'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue';
 import{ useI18n } from "vue-i18n";
+import { useAuthStore } from '../stores/auth';
+
+const auth = useAuthStore();
 
 const { t } = useI18n()
 
@@ -42,6 +45,11 @@ async function save() {
         jvm.saveSettings()
         router.push('/')
     }
+}
+
+async function unlogin() {
+    auth.removeLogin()
+    router.push('/login')
 }
 </script>
 
@@ -75,6 +83,9 @@ async function save() {
                     </v-list-item>
                     <v-list-item>
                         <v-textarea color="primary" density="compact" :label="$t('settings.java.args')" v-model="jvm.javaArgs"></v-textarea>
+                    </v-list-item>
+                    <v-list-item>
+                        <v-btn color="primary" @click="unlogin">{{$t('login.button.unlogin')}}</v-btn>
                     </v-list-item>
                 </v-list></v-form>
             </v-card>

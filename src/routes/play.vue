@@ -189,15 +189,15 @@ async function PurgeFiles(profile:any, pack:any) {
             console.log("checking ", serverFilename)
             let legalFile = false;
             await asyncForEachParallel(pack, async (serverFile:any) => {
-                //console.log("debug ", serverFile)
+                console.log("debug ", serverFile)
                 if (serverFile.path==serverFilename) {
                     const legality = await ipcRenderer.invoke("checkfile", file, serverFile.sha256);
-                    //console.log(serverFilename, "is not legal")
+                    console.log(serverFilename, "is not legal")
                     legalFile = legalFile || legality
                 }
             })
             if (!legalFile) {
-                //console.log("deliting ", file)
+                console.log("deliting ", file)
                 if (await ipcRenderer.invoke("deleteFile", file)) {
                     console.log("removed illegal file "+file)
                 }

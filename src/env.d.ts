@@ -11,7 +11,8 @@ interface AuthInfo {
   accessToken: string | null,
   clientToken: string | null,
   uuid: string | null,
-  user: UserInfo | null
+  user: UserInfo | null,
+  mojang: boolean | null
 }
 
 interface UserInfo {

@@ -6,10 +6,12 @@ import playbutton from '../components/playbutton.vue'
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
-import {ref} from 'vue';
+import {onMounted, onUnmounted, ref} from 'vue';
 import { AxiosError } from 'axios';
 import{ useI18n } from "vue-i18n";
 import urls from "../../electron/urllist"
+import { ServerDeviceCodeResponse } from 'prismarine-auth';
+import { DateTime } from 'luxon';
 
 const { t } = useI18n()
 
@@ -20,12 +22,19 @@ const boolLogingIn = ref(true);
 const loginSuccessfull = ref(false);
 
 async function autoLogin() {
-    await auth.refreshLogin();
+    if (auth.mojang) {
+        if (auth.user == null) {
+            return
+        }
+        await auth.loginMojang(auth.user.name, "");
+    }
+    else {
+        await auth.refreshLogin();
+    }
     await auth.saveLogin();
     if (auth.accessToken != null) {
         router.push("/")
     }
-    boolLogingIn.value = false;
 }
 async function onStart() {
     await auth.loadLastLogin();
@@ -49,12 +58,23 @@ const rules = ref([
         return t('login.empty')
     }
 ])
+const passrules = ref([
+    (value: string) => {
+        //FIXME:
+        //console.log(mojang.value);
+        //if (mojang.value) return true
+        return true;
+        //return t('login.empty')
+    }
+])
 async function test() {
     if (!(valid.value||boolLogingIn.value)) return;
     boolLogingIn.value = true;
     try {
-        await auth.login(username.value, password.value);
-        await auth.saveLogin();
+        if (mojang.value)
+            await loginMojang();
+        else
+            await loginCustom();
         router.push("/")
     } catch (error) {
         boolLogingIn.value = false
@@ -64,6 +84,44 @@ async function test() {
     }
     boolLogingIn.value = false;
 }
+
+async function loginCustom() {
+    await auth.login(username.value, password.value);
+    await auth.saveLogin();
+}
+
+async function loginMojang() {
+    await auth.loginMojang(username.value, password.value);
+    await auth.saveLogin();
+}
+
+const mojang = ref(true);
+
+const dialog = ref({
+    show: false,
+})
+
+const Code = ref<ServerDeviceCodeResponse>();
+
+const onMessage = (event:any)=>{
+    const code: ServerDeviceCodeResponse | undefined = event.detail;
+    console.log(code)
+    if (code) {
+        dialog.value.show = true
+    }
+    else {
+        dialog.value.show = false
+    }
+    Code.value = code;
+}
+
+
+onMounted(()=>{
+    document.addEventListener("DeviceCode", onMessage)
+})
+onUnmounted(()=>{
+    document.removeEventListener("DeviceCode", onMessage)
+})
 
 </script>
 
@@ -83,10 +141,12 @@ async function test() {
                         <v-text-field
                             v-model="password"
                             :label="$t('login.password')"
-                            :rules="rules"
+                            :rules="passrules"
                             type="password"
-                            required
+                            :required="!mojang"
+                            :disabled="mojang"
                         />
+                        <v-checkbox :label="$t('login.mojang')" v-model="mojang"></v-checkbox>
                     </v-form>
                     <div v-if="errorText != null">{{ errorText }}</div>
                 </div>
@@ -100,6 +160,17 @@ async function test() {
                 <a :href=urls.registerLink target="_blank"><playbutton secondary>{{$t('login.button.register')}}</playbutton></a>
             </template>
         </controls>
+        <v-dialog
+            v-model="dialog.show"
+            persistent
+        >
+            <v-card>
+            <v-card-text>
+                {{$t("login.deviceCode", {user_code: Code?.user_code, url: Code?.verification_uri, expires_in:Code?.expires_in??0/60})}}
+                <a :href="Code?.verification_uri+'?otc='+Code?.user_code" target="_blank">{{Code?.verification_uri}}?otc={{Code?.user_code}}</a>
+            </v-card-text>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 

@@ -35,7 +35,7 @@ createApp(App)
 
 
 import { ipcRenderer } from 'electron'
-ipcRenderer.on('minecraft-log', (e:Event, text:string)=>{
+ipcRenderer.on('minecraft-log', (e, text:string)=>{
   //const buffer = Buffer.from(text)
   //const string = buffer.toString("utf-8")
   try {
@@ -53,4 +53,11 @@ ipcRenderer.on('minecraft-log', (e:Event, text:string)=>{
     const event = new CustomEvent("MinecraftMessage", {detail:text})
     document.dispatchEvent(event)
   }
+})
+import { ServerDeviceCodeResponse } from 'prismarine-auth'
+
+ipcRenderer.on('deviceCode', (e, code:ServerDeviceCodeResponse)=>{
+  const event = new CustomEvent("DeviceCode", {detail:code})
+  console.log(code)
+  document.dispatchEvent(event)
 })

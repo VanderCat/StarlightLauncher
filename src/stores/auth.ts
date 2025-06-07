@@ -3,6 +3,7 @@ import { ipcRenderer } from 'electron'
 import { uniqueId } from 'lodash';
 import axios from 'axios';
 import urls from "../../electron/urllist"
+import uuid from "uuid"
 
 const baseurl = urls.auth.authHost
 
@@ -11,17 +12,23 @@ export const useAuthStore = defineStore('authStore', {
         accessToken: null,
         uuid: null,
         user: null,
-        clientToken: null
+        clientToken: null,
+        mojang: false
       }),
     actions: {
         async loadLastLogin() {
             const account: AuthInfo = await ipcRenderer.invoke("loadLastLogin");
             this.accessToken = account.accessToken
             this.uuid = account.uuid
-            this.clientToken = account.clientToken??uniqueId();
+            this.clientToken = account.clientToken??uniqueId("starlight");
+            this.mojang = account.mojang??false;
         },
         async login(username: string, password: string) {
             const account = await axios.post(baseurl+"/authenticate", {
+                agent: {
+                    name: "Minecraft",
+                    vestion: 1
+                },
                 username: username,
                 password: password
             })
@@ -35,6 +42,14 @@ export const useAuthStore = defineStore('authStore', {
             catch (err) {
                 console.error("current auth does not support selectedProfile")
             }
+        },
+        async loginMojang(username: string, password: string) {
+            const account: AuthInfo = await ipcRenderer.invoke("authMojang");
+            this.accessToken = account.accessToken
+            this.uuid = account.uuid
+            this.clientToken = account.clientToken
+            this.user = account.user
+            this.mojang = true
         },
         async refreshLogin() {
             const account = await axios.post(baseurl+"/refresh", {
@@ -54,8 +69,12 @@ export const useAuthStore = defineStore('authStore', {
                 clientToken: this.clientToken, 
                 user: {
                     name: this.user?.name
-                }
+                },
+                mojang: this.mojang
             });
+        },
+        async removeLogin() {
+            await ipcRenderer.invoke("saveLastLogin", {});
         }
     },
 })

@@ -13,5 +13,5 @@ export default {
         servicesHost: "https://auth.agusha.club/services",
     },
     registerLink: "https://auth.agusha.club/web/registration",
-    launcherHost: "http://localhost:3000/"
+    launcherHost: "https://starlight.agusha.club/"
 }
