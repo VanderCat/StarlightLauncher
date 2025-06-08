@@ -186,10 +186,10 @@ async function PurgeFiles(profile:any, pack:any) {
         const currentFileList: string[] = await ipcRenderer.invoke("getAllFiles", path.resolve( pathToMc, profile.minecraft.name, entry))
         await asyncForEachParallel(currentFileList, async (file:string) => {
             const serverFilename = "updates"+file.replace(pathToMc, "").replaceAll("\\","/");
-            console.log("checking ", serverFilename)
+            //console.log("checking ", serverFilename)
             let legalFile = false;
             await asyncForEachParallel(pack, async (serverFile:any) => {
-                console.log("debug ", serverFile)
+                //console.log("debug ", serverFile)
                 if (serverFile.path==serverFilename) {
                     const legality = await ipcRenderer.invoke("checkfile", file, serverFile.sha256);
                     console.log(serverFilename, "is not legal")
@@ -197,7 +197,7 @@ async function PurgeFiles(profile:any, pack:any) {
                 }
             })
             if (!legalFile) {
-                console.log("deliting ", file)
+                //console.log("deliting ", file)
                 if (await ipcRenderer.invoke("deleteFile", file)) {
                     console.log("removed illegal file "+file)
                 }

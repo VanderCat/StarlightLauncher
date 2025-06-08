@@ -185,7 +185,7 @@ export default async function launchMinecraft(e:Event, sendMessage:Function, pro
     console.log("Launching minecraft with parameters", finalArgs)
     let javaPath = ""
     if (jvm.bundledJava)
-        javaPath = await fs.readFile(path.resolve(app.getPath("userData"),".javapath"), "utf-8");
+        javaPath = await fs.readFile(path.resolve(cfg.cfgfolder,".javapath"), "utf-8");
     else {
         if (process.platform =="win32")
             javaPath = path.resolve(jvm.javaPath, "javaw.exe")

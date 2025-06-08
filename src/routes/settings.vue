@@ -49,7 +49,7 @@ async function save() {
 
 async function unlogin() {
     auth.removeLogin()
-    router.push('/login')
+    router.push('/welcome')
 }
 </script>
 

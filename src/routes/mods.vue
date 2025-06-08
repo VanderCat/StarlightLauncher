@@ -71,6 +71,8 @@ onMounted(async ()=>{
 })
 
 async function save() {
+    //const { valid } = await form.value.validate();
+    //if (!valid) return;
     let selectedMapped: {[key:string]:ModEntry} = {}
     for (const key in modlist.value) {
         if (Object.prototype.hasOwnProperty.call(modlist.value, key)) {
@@ -81,14 +83,22 @@ async function save() {
     console.log(await ipcRenderer.invoke("saveConfig", "modconfig_dc12", selectedMapped))
     router.push("/settings")
 }
+
+function ruleFactory(mod: ModEntry) {
+    if (typeof mod.conflictsWith == "string")
+        return enabledMods.value.includes(mod.conflictsWith as string)
+    return enabledMods.value.some(v => v.includes(mod.conflictsWith as string))
+}
+
 </script>
 
 <template>
     <div id="mainview">
         <div id="freespace">
             <v-card theme="dark" style="height: 100%; overflow: auto;">
+                <!--<v-form v-model="form">-->
                 <v-list v-if="loaded" v-model:selected="enabledMods" select-strategy="leaf">
-                    <v-list-item v-for="mod, name in filteredMods" :value="name" :disabled="!mod.optional">
+                    <v-list-item v-for="mod, name in filteredMods" :value="name" :disabled="!mod.optional" :color="ruleFactory(mod)?'red':'on-surface-variant'">
                         <template v-slot:prepend="{ isSelected, select }">
                             <v-list-item-action>
                                 <v-checkbox-btn :model-value="isSelected" @update:model-value="select"></v-checkbox-btn>
@@ -98,6 +108,7 @@ async function save() {
                         <v-list-item-subtitle v-if="mod.description">{{mod.description}}</v-list-item-subtitle>
                     </v-list-item>
                 </v-list>
+                <!--</v-form>-->
             </v-card>
         </div>
         <controls>

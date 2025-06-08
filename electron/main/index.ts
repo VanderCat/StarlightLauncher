@@ -248,13 +248,14 @@ ipcMain.handle("authMojang", async (e, username: string, password: string) => {
     sendDeviceCode(res);
   })
   const response = await flow.getMinecraftJavaToken({ fetchEntitlements: true, fetchProfile: true, fetchCertificates: true })
+  console.log(response)
   sendDeviceCode();
   return {
     accessToken: response.token,
-    uuid: response.profile.id,
+    uuid: response.profile?.id,
     user: {
-      name: response.profile.name,
-      id: response.profile.id
+      name: response.profile?.name,
+      id: response.profile?.id
     },
     clientToken: null,
     mojang: true

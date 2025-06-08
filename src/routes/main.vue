@@ -11,9 +11,11 @@ import { useAuthStore } from '../stores/auth';
 const auth = useAuthStore();
 const router = useRouter();
 (async ()=>{
-    await auth.loadLastLogin()
     if (auth.accessToken == null) {
-        router.push("/login")
+        await auth.loadLastLogin()
+        if (auth.accessToken == null) {
+            router.push("/welcome")
+        }
     }
 })();
 </script>

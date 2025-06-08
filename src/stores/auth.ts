@@ -45,10 +45,13 @@ export const useAuthStore = defineStore('authStore', {
         },
         async loginMojang(username: string, password: string) {
             const account: AuthInfo = await ipcRenderer.invoke("authMojang");
-            this.accessToken = account.accessToken
-            this.uuid = account.uuid
-            this.clientToken = account.clientToken
-            this.user = account.user
+            this.accessToken = account.accessToken??this.accessToken
+            this.uuid = account.uuid??this.uuid
+            this.clientToken = account.clientToken??this.clientToken
+            this.user = account.user??this.user
+            if (!this.uuid || !account.user?.name) {
+                throw "failed to get profile!!!!!!!!!!!"
+            }
             this.mojang = true
         },
         async refreshLogin() {

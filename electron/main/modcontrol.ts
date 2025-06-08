@@ -12,9 +12,9 @@ export function prepareModList(profile: Profile, profileId: string) {
     function addMod(mod: ModEntry) {
         if (typeof mod.file == "string") {
             if (!mod.file.startsWith("mods/"))
-                enabledModList.push(mod.file)
+                enabledModList.push(mod.file.replaceAll("/", path.sep))
         } else if (mod.file instanceof Array) {
-            enabledModList.concat(mod.file.filter(value => !value.startsWith("mods/")))
+            enabledModList.concat(mod.file.filter(value => !value.startsWith("mods/")).map((value) => value.replaceAll("/", path.sep)))
         }
     }
     for (let modName in mods) {
