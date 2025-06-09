@@ -35,11 +35,14 @@ onMounted(async ()=>{
         for (const key in modlist.value) {
             if (Object.prototype.hasOwnProperty.call(modlist.value, key)) {
                 const mod = modlist.value[key];
-                if (modconfig[key]) {
-                    if (modconfig[key].enabled)
-                        enabledMods.value.push(key)
+                if (modconfig)
+                    if (modconfig[key]) {
+                        if (modconfig[key].enabled) {
+                            enabledMods.value.push(key)
+                            continue
+                        }
                 }
-                else if (mod.enabled != null && mod.enabled) {
+                if (mod.enabled != null && mod.enabled) {
                     enabledMods.value.push(key)
                 }
 

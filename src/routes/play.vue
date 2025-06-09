@@ -12,6 +12,7 @@ import { getJavaInfo, getPackageInfo, getProfile} from "../serverapi"
 import { asyncForEach, asyncForEachParallel } from "../utils"
 import{ useI18n } from "vue-i18n";
 import urllist from "../../electron/urllist"
+import { ModEntry, Profile } from "types/profile"
 
 const { t } = useI18n()
 
@@ -166,6 +167,7 @@ function downloadAll(profile:any, skipFileList: string[]) {
     return Promise.all(funcs)
 }
 async function startMinecraft() {
+    await saveMods()
     router.push("/console")
     await ipcRenderer.invoke("launchMinecraft", route.params.profile)
 }
@@ -236,6 +238,28 @@ onMounted(async ()=>{
         dialog.value.show = true
     }
 })
+
+async function saveMods() {
+    if (await ipcRenderer.invoke("loadConfig", "modconfig_"+route.params.profile) != null) {
+        return
+    }
+    console.log("no mod config")
+    const profile = await getProfile(route.params.profile as string) as Profile
+    let selectedMapped: {[key:string]:ModEntry} = {}
+    if (profile.minecraft.mods == null) {
+        console.log("no mods")
+        return
+    }
+    const modlist = profile.minecraft.mods;
+    for (const key in modlist) {
+        if (Object.prototype.hasOwnProperty.call(modlist, key)) {
+            const mod:ModEntry = modlist[key];
+            selectedMapped[key] = {enabled: mod.enabled}
+        }
+    }
+    console.log("saved modlist")
+    console.log(await ipcRenderer.invoke("saveConfig", "modconfig_dc12", selectedMapped))
+}
 
 </script>
 
