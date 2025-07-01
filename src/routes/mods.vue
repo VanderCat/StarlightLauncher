@@ -39,8 +39,8 @@ onMounted(async ()=>{
                     if (modconfig[key]) {
                         if (modconfig[key].enabled) {
                             enabledMods.value.push(key)
-                            continue
                         }
+                        continue
                 }
                 if (mod.enabled != null && mod.enabled) {
                     enabledMods.value.push(key)
